@@ -488,3 +488,19 @@ void    hs_stat(HStore *store, uint64_t *total, uint64_t *avail)
     uint64_t total_space;
     mgr_stat(store->mgr, &total_space, avail);
 }
+
+int64_t hs_visit(HStore *store, RecordVisitor f, void *arg)
+{
+    int i;
+    int64_t total = 0;
+    for (i=0; i<store->count; i++) {
+        int64_t r = bc_visit(store->bitcasks[i], f, arg);
+        if (r >= 0) {
+            total += r;
+        } else {
+            total += -r;
+            return -total;
+        }
+    }
+    return total;
+}

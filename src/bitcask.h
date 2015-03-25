@@ -38,5 +38,5 @@ uint16_t   bc_get_hash(Bitcask *bc, const char * pos, int *count);
 char*      bc_list(Bitcask *bc, const char* pos, const char *prefix);
 uint32_t   bc_count(Bitcask *bc, uint32_t* curr);
 void       bc_stat(Bitcask *bc, uint64_t *bytes);
-	
+int64_t   bc_visit(Bitcask *bc, RecordVisitor f, void *arg);
 #endif

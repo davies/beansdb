@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <errno.h>
 
+/*
 inline static void* 
 my_malloc(size_t s, const char *file, int line, const char *func) {
     void *p = malloc(s);
@@ -31,7 +32,7 @@ my_malloc(size_t s, const char *file, int line, const char *func) {
 }
 
 #define malloc(X) my_malloc(X, __FILE__, __LINE__, __FUNCTION__)
-
+*/
 typedef struct t_item Item;
 struct t_item {
     uint32_t pos;

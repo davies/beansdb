@@ -15,6 +15,8 @@
 #ifndef __HSTORE_H__
 #define __HSTORE_H__
 
+#include "record.h"
+
 typedef struct t_hstore HStore;
 
 HStore* hs_open(char *path, int height, time_t before, int scan_threads);
@@ -28,4 +30,5 @@ bool    hs_delete(HStore *store, char *key);
 uint64_t hs_count(HStore *store, uint64_t *curr);
 void    hs_stat(HStore *store, uint64_t *total, uint64_t *avail);
 bool    hs_optimize(HStore *store, int limit);
+int64_t hs_visit(HStore *store, RecordVisitor f, void *arg); 
 #endif

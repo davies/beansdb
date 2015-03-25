@@ -566,3 +566,51 @@ uint32_t optimizeDataFile(HTree* tree, int bucket, const char* path, const char*
             path, deleted, deleted_bytes);
     return deleted_bytes;
 }
+
+int64_t visit_record(const char* path, RecordVisitor visitor, void *arg, bool decomp)
+{
+    MFile *f = open_mfile(path);
+    if (f == NULL) return 0;
+
+    fprintf(stderr, "scan datafile %s\n", path);
+    char *p = f->addr, *end = f->addr + f->size;
+    int broken = 0;
+    int64_t total = 0;
+    size_t last_advise = 0;
+    while (p < end) {
+        DataRecord *r = decode_record(p, end-p, false);
+
+        if (r != NULL) {
+            uint32_t pos = p - f->addr;
+            p += record_length(r);
+            if (decomp) {
+                r = decompress_record(r);
+            }
+            if (!visitor(r, arg)) {
+                fprintf(stderr, "visitor return false, stop\n");
+                close_mfile(f);
+                return -total;
+            }
+            free_record(r);
+            total ++;
+        } else {
+            broken ++;
+            if (broken > 40960) { // 10M
+                fprintf(stderr, "unexpected broken data in %s at %ld\n", path, p - f->addr - broken * PADDING);
+                break;
+            }
+            p += PADDING;
+        }
+    size_t pos = p - f->addr;
+    if (pos - last_advise > (64<<20)) {
+        madvise(f->addr, pos, MADV_DONTNEED);
+#if _XOPEN_SOURCE >= 600 || _POSIX_C_SOURCE >= 200112L
+        posix_fadvise(f->fd, 0, pos, POSIX_FADV_DONTNEED);
+#endif
+        last_advise = pos;
+    }
+    }
+
+    close_mfile(f);
+    return total;
+}

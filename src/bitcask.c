@@ -708,3 +708,28 @@ void bc_stat(Bitcask *bc, uint64_t *bytes)
         *bytes = bc->bytes;
     }
 }
+
+int64_t bc_visit(Bitcask *bc, RecordVisitor f, void *arg)
+{
+    int i;
+    const char *base = mgr_base(bc->mgr);
+    struct stat st;
+    int64_t total = 0;
+
+    bc_flush(bc, 0, 0);
+    for (i=0; i < 256; i++) {
+        char datapath[255], hintpath[255];
+        gen_path(datapath, base, DATA_FILE, i); 
+        if (stat(datapath, &st) != 0) {
+            continue; // skip empty file
+        }
+        int64_t n = visit_record(datapath, f, arg, true);
+        if (n > 0) {
+            total += n;
+        } else {
+            total += -n;
+            return -total;
+        }
+    }
+    return total;
+}

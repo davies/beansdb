@@ -34,7 +34,7 @@ typedef struct data_record {
 	char key[0];
 } DataRecord;
 
-typedef bool (*RecordVisitor)(DataRecord *r, void *arg1, void *arg2);
+typedef bool (*RecordVisitor)(DataRecord *r, void *arg);
 
 uint32_t gen_hash(char* buf, int size);
 
@@ -49,6 +49,6 @@ void scanDataFile(HTree* tree, int bucket, const char* path, const char* hintpat
 void scanDataFileBefore(HTree* tree, int bucket, const char* path, time_t before);
 uint32_t optimizeDataFile(HTree* tree, int bucket, const char* path, const char* hintpath,
     bool skipped, uint32_t max_data_size, int last_bucket, const char * lastdata, const char *lasthint);
-void visit_record(const char* path, RecordVisitor visitor, void *arg1, void *arg2, bool decomp);
+int64_t visit_record(const char* path, RecordVisitor visitor, void *arg, bool decomp);
 
 #endif
